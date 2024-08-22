@@ -46,8 +46,6 @@ class BookController extends Controller
     }
 
 
-
-
     /**
      * Display the specified resource.
      */
@@ -69,14 +67,14 @@ class BookController extends Controller
     public function store(BookRequest $request)
     {
         $data =  $request->validate([
-            'file' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         // Jika file gambar diinput
         if ($request->hasFile('image')) {
             // Unggah gambar ke Cloudinary
             $uploadedFileUrl = Cloudinary::upload($request->file('image')->getRealPath())->getSecurePath();
-
+            Log::info('Uploaded URL: ' . $uploadedFileUrl);
             // Simpan URL gambar dari Cloudinary ke dalam database
             $data['image'] = $uploadedFileUrl;
         }
@@ -85,7 +83,7 @@ class BookController extends Controller
 
         // Muat relasi category dan kembalikan respon
         $book->load('category');
-        Log::info(env('CLOUDINARY_URL'));
+
         return response()->json([
             'message' => 'Book baru berhasil dibuat',
             'data' => $book
