@@ -46,12 +46,31 @@ class BookController extends Controller
     }
 
 
+
+
+    /**
+     * Display the specified resource.
+     */
+    public function show($id)
+    {
+        $book = Book::with('category')->find($id);
+
+        if (!$book) {
+            return response()->json(['message' => 'Book tidak ditemukan'], 404);
+        }
+
+        return response()->json($book);
+    }
+
+
     /**
      * Store a newly created resource in storage.
      */
     public function store(BookRequest $request)
     {
-        $data = $request->validated();
+        $data =  $request->validate([
+            'file' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
 
         // Jika file gambar diinput
         if ($request->hasFile('image')) {
@@ -66,20 +85,13 @@ class BookController extends Controller
 
         // Muat relasi category dan kembalikan respon
         $book->load('category');
-
+        Log::info(env('CLOUDINARY_URL'));
         return response()->json([
             'message' => 'Book baru berhasil dibuat',
             'data' => $book
         ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show($id)
-    {
-        // Same as before
-    }
 
     /**
      * Update the specified resource in storage.

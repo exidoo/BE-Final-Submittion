@@ -58,7 +58,7 @@ return [
         ],
 
         'cloudinary' => [
-        'driver' => 'cloudinary',
+            'driver' => 'cloudinary',
         ],
 
     ],
