@@ -85,7 +85,6 @@ class BookController extends Controller
 
         // Muat relasi category dan kembalikan respon
         $book->load('category');
-        Log::info(env('CLOUDINARY_URL'));
         return response()->json([
             'message' => 'Book baru berhasil dibuat',
             'data' => $book
