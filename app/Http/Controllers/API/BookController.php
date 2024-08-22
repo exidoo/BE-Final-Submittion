@@ -76,7 +76,7 @@ class BookController extends Controller
         if ($request->hasFile('image')) {
             // Unggah gambar ke Cloudinary
             $uploadedFileUrl = Cloudinary::upload($request->file('image')->getRealPath())->getSecurePath();
-
+            Log::info('Uploaded URL: ' . $uploadedFileUrl);
             // Simpan URL gambar dari Cloudinary ke dalam database
             $data['image'] = $uploadedFileUrl;
         }
