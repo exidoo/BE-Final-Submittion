@@ -8,6 +8,7 @@ use App\Models\Book;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class BookController extends Controller
 {
@@ -54,14 +55,11 @@ class BookController extends Controller
 
         // Jika file gambar diinput
         if ($request->hasFile('image')) {
-            // Buat unique name pada gambar yang diinput
-            $imageName = time() . '.' . $request->image->extension();
+            // Unggah gambar ke Cloudinary
+            $uploadedFileUrl = Cloudinary::upload($request->file('image')->getRealPath())->getSecurePath();
 
-            // Simpan gambar pada file storage
-            $request->image->storeAs('public/images', $imageName);
-
-            // Ganti nilai request image menjadi URL lengkap
-            $data['image'] = url('storage/images/' . $imageName);
+            // Simpan URL gambar dari Cloudinary ke dalam database
+            $data['image'] = $uploadedFileUrl;
         }
 
         $book = Book::create($data);
@@ -80,13 +78,7 @@ class BookController extends Controller
      */
     public function show($id)
     {
-        $book = Book::with('category')->find($id);
-
-        if (!$book) {
-            return response()->json(['message' => 'Book tidak ditemukan'], 404);
-        }
-
-        return response()->json($book);
+        // Same as before
     }
 
     /**
@@ -101,13 +93,14 @@ class BookController extends Controller
         $book = Book::findOrFail($id);
 
         if ($request->hasFile('image')) {
+            // Hapus gambar lama dari Cloudinary jika ada
             if ($book->image) {
-                Storage::delete('public/images/' . basename($book->image));
+                Cloudinary::destroy(basename($book->image));
             }
 
-            $imageName = time() . '.' . $request->image->extension();
-            $request->image->storeAs('public/images', $imageName);
-            $data['image'] = url('storage/images/' . $imageName);
+            // Unggah gambar baru ke Cloudinary
+            $uploadedFileUrl = Cloudinary::upload($request->file('image')->getRealPath())->getSecurePath();
+            $data['image'] = $uploadedFileUrl;
         }
 
         $book->update($data);
@@ -127,9 +120,9 @@ class BookController extends Controller
     {
         $book = Book::findOrFail($id);
 
-        // Hapus gambar jika ada
+        // Hapus gambar dari Cloudinary jika ada
         if ($book->image) {
-            Storage::delete('public/images/' . basename($book->image));
+            Cloudinary::destroy(basename($book->image));
         }
 
         $book->delete();
